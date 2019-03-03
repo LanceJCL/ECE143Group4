@@ -19,7 +19,7 @@ percentage_approved = {i: approved_applicants[i]/total_applications[i] for i in 
 percentage_approved = {i:percentage_approved[i]*100 for i in thisset}
 
 #filtering out the top 15 highest percentage_approved job titles and their respective percentages 
-Dictx = sorted(percentage_approved.items(), key = lambda x:-x[1])[:15]
+Dictx = dict(sorted(percentage_approved.items(), key = lambda x:-x[1])[:15])
 
 #creating pie chart
 sizes = [Dictx[i] for i in Dictx.keys()]
