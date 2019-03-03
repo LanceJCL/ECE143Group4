@@ -1,0 +1,40 @@
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+thisset = {}
+
+#getting all job titles in a set
+for i in df['SOC_NAME']:
+  thisset.add(i)
+  
+#creating a mapping of the total number of applicants for each job title
+total_applications = {i:(df['SOC_NAME'].str.contains(i)).sum() for i in thisset}
+
+#creating a mapping of the total certified applicants for each job title
+approved_applicants = {i:(df['SOC_NAME'].str.contains(i) & df['CASE_STATUS'].str.contains('CERTIFIED') & ~df['CASE_STATUS'].str.contains('CERTIFIEDWITHDRAWN')).sum() for i in thisset}
+
+#creating mapping of percentage_approved for each job title
+percentage_approved = {i: approved_applicants[i]/total_applicants[i] for i in thisset}
+percentage_approved = {i:percentage_approved[i]*100 for i in thisset}
+
+#filtering out the top 15 highest percentage_approved job titles and their respective percentages 
+Dictx = sorted(percentage_approved.items(), key = lambda x:-x[1])[:15]
+
+#creating pie chart
+sizes = [Dictx[i] for i in Dictx.keys()]
+labels = tuple([i for i in Dictx.keys()])
+fig1, ax1 = plt.subplots()
+ax1.pie(sizes, labels = labels, autopct = '%1.1f%%',shadow = True, startangle=90)
+ax1.axis('equal')
+plt.show()
+
+#creating bar chart
+def plot_bar_x():
+    index = np.arange(len(labels))
+    plt.bar(index, sizes)
+    plt.xlabel('Top 15 Job Titles', fontsize=5)
+    plt.ylabel('Percentage certified for H1b', fontsize=5)
+    plt.xticks(index, labels, fontsize=5, rotation = 30)
+    plt.title('Top 15 job titles and their acceptance rates for H1b')
+    plt.show()
