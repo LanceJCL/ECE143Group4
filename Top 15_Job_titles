@@ -12,10 +12,10 @@ for i in df['SOC_NAME']:
 total_applications = {i:(df['SOC_NAME'].str.contains(i)).sum() for i in thisset}
 
 #creating a mapping of the total certified applicants for each job title
-approved_applicants = {i:(df['SOC_NAME'].str.contains(i) & df['CASE_STATUS'].str.contains('CERTIFIED') & ~df['CASE_STATUS'].str.contains('CERTIFIEDWITHDRAWN')).sum() for i in thisset}
+approved_applicants = {i:(df['SOC_NAME'].str.contains(i) & df['CASE_STATUS'].str.contains('CERTIFIED') & ~df['CASE_STATUS'].str.contains('WITHDRAWN')).sum() for i in thisset}
 
 #creating mapping of percentage_approved for each job title
-percentage_approved = {i: approved_applicants[i]/total_applicants[i] for i in thisset}
+percentage_approved = {i: approved_applicants[i]/total_applications[i] for i in thisset}
 percentage_approved = {i:percentage_approved[i]*100 for i in thisset}
 
 #filtering out the top 15 highest percentage_approved job titles and their respective percentages 
