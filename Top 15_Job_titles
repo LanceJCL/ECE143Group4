@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-thisset = {}
+thisset = set()
 
 #getting all job titles in a set
 for i in df['SOC_NAME']:
