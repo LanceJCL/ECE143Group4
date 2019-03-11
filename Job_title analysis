@@ -30,19 +30,49 @@ ax1.axis('equal')
 plt.show()
 
 #filtering out the top 10 highest submitted H1B job titles and making a pie chart from those 10
+
 Dictx = dict(sorted(total_applications.items(), key = lambda x: -x[1])[:10])
 sizes = [Dictx[i] for i in Dictx.keys()]
 percent = [100*i/sum(sizes) for i in sizes]
-labels = ['{0} - {1:1.2f} %'.format(i,j) for i, j in zip(Dictx.keys(), percent)]
+labels = ['{0} - {1} cases submitted'.format(i,j) for i, j in zip(Dictx.keys(), Dictx.values())]
 patches, texts = plt.pie(sizes, startangle = 90)
 patches, labels, dummy = zip(*sorted(zip(patches, labels, sizes), key = lambda x: x[2], reverse=True))
 plt.legend(patches, labels, loc = 'best', bbox_to_anchor = (-0.1, 1.), fontsize=8)
 plt.title("Top 10 most submitted job titles", bbox = {'facecolor': '0.8', 'pad':5})
 
+#filtering out the approval rates for top 10 highest submitted
+percentage_top10 = {i:percentage_approvied[i] for i in Dictx.keys()}
 
+#horizontal bar chart for approval rates of top 10 highest submitted
+def plot_bar_y():
+    index = np.arange(len(labels))
+    plt.barh(index,list(percentage_top10.values()))
+    plt.xlabel('Approval Rates', fontsize=11)
+    plt.ylabel('Job Titles', fontsize=11)
+    plt.yticks(index, percentage_top10.keys(), fontsize = 7)
+    plt.title('Approval Rates of Top 10 Most Submitted Jobs', fontsize = 11)
+    plt.show()
 
+#line graph for top 10 jobs from 2011 until 2017
 
+#getting dictionary of the values of total submissions between 2011 to 2017 
+x = dict()
+for i in percentage_top10.keys():
+    y = list()
+    for year in range(2011,2018):
+        y.append(((df['SOC_NAME'].str.contains(i)) & (df['CASE_SUBMITTED_YEAR'] == year)).sum())
+    x[i] = y
+#plotting them on line chart
 
+color = ['orange', 'g', 'b', 'r', 'c', 'm', 'y', 'k', 'darksalmon', 'sienna']
+my_dict = dict(zip(percentage_top10.keys(), color))
+for job in my_dict.keys():
+    plt.plot(list(range(2011,2018)), x[job], color = my_dict[job], label = job)
+plt.xlabel('Year')
+plt.ylabel('submitted cases')
+plt.legend(loc = 'upper left')
+plt.title('submitted cases of the top 10 jobs from 2011 until 2017')
+plt.show()
 
 
 #creating bar chart
