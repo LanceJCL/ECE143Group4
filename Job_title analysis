@@ -84,3 +84,130 @@ def plot_bar_x():
     plt.xticks(index, labels, fontsize=5, rotation = 30)
     plt.title('Top 15 job titles and their acceptance rates for H1b')
     plt.show()
+    
+#getting the data
+   
+df = pd.read_csv("totalnew.csv", encoding='latin-1', low_memory=False, usecols=['CASE_SUBMITTED','DECISION_DATE', 'EMPLOYER_NAME', 'EMPLOYER_STATE', 'PREVAILING_WAGE', 'PW_UNIT_OF_PAY', 'CASE_STATUS', 'SOC_NAME', 'SOC_CODE'])
+dfn = df.reset_index()
+df = dfn.drop(['index'], axis=1)
+df['year'] = pd.DatetimeIndex(df['CASE_SUBMITTED']).year
+df = df[df.year.isin(range(2015,2019))]
+    
+thisset = set()
+for i in df['SOC_NAME']:
+  thisset.add(i) 
+    
+total_applications = {i:(df['SOC_NAME']==(i)).sum() for i in thisset}
+
+
+approved_applicants = {i:((df['SOC_NAME'] == i) & (df['CASE_STATUS'] =='CERTIFIED')).sum() for i in thisset}
+
+percentage_approved = {i: 100*approved_applicants[i]/total_applications[i] for i in thisset}
+    
+ #filters out the submissions that have over 50 counts
+new_total = dict()
+for key,value in total_applications.items():
+ if value >=50:
+ new_total[key] = value
+    
+    
+  #stacked barcharts for top 5 highest approved and top5 worst approved
+
+Dictx = dict(sorted(new_percentage.items(), key = lambda x:-x[1])[:5])
+approved = {i: new_approved[i] for i in Dictx.keys()}
+approved = (i for i in approved.values())
+N = 5
+ind = np.arange(N)
+width = 0.35
+ worst_5 = dict(sorted(new_percentage.items(), key = lambda x:x[1])[:5])
+worst_5_approved = tuple(new_approved[i] for i in worst_5.keys())
+worst_5_denied = tuple(new_total[i] - new_approved[i] for i in worst_5.keys())
+
+
+p1 = plt.bar(ind, worst_5_approved, width)
+p2 = plt.bar(ind, worst_5_denied, width, bottom = worst_5_approved)
+plt.ylabel('number of cases', fontsize = 15)
+plt.title('H1B cases of worst 5 job titles', fontsize = 15)
+plt.xticks(ind, label_worst, rotation = 50)
+plt.legend((p1[0], p2[0]), ('Approved', 'Denied'))
+plt.show()
+
+ p1 = plt.bar(ind, approved, width)
+p2 = plt.bar(ind, denied, width, bottom = approved)
+plt.ylabel('number of cases', fontsize = 15)
+plt.title('H1B cases of top 5 job titles', fontsize = 15)
+plt.xticks(ind, label, rotation = 50)
+plt.legend((p1[0], p2[0]), ('Approved', 'Denied'))
+plt.show()
+
+#piecharts for top 5 most submissions and least submissions
+least_submitted_top5 = dict(sorted(new_total.items(), key = lambda x: x[1])[:5])
+
+sizes = [least_submitted_top5[i] for i in least_submitted_top5.keys()]
+
+percent = [100*i/sum(sizes) for i in sizes]
+labels = ['{0} - {1} case(s) submitted'.format(i,j) for i, j in zip(least_submitted_top5.keys(), least_submitted_top5.values())]
+patches, texts = plt.pie(sizes, startangle = 90)
+patches, labels, dummy = zip(*sorted(zip(patches, labels, sizes), key = lambda x: x[2], reverse=True))
+plt.legend(patches, labels, loc = 'best', bbox_to_anchor = (-0.1, 1.), fontsize=15)
+plt.title("Top 5 least submitted job titles", bbox = {'facecolor': '0.8', 'pad':5}, fontsize = 15)
+
+
+most_submitted_top5 = dict(sorted(new_total.items(), key = lambda x: -x[1])[:5])
+
+
+sizes = [most_submitted_top5[i] for i in most_submitted_top5.keys()]
+percent = [100*i/sum(sizes) for i in sizes]
+labels = ['{0} - {1} case(s) submitted'.format(i,j) for i, j in zip(most_submitted_top5.keys(), most_submitted_top5.values())]
+patches, texts = plt.pie(sizes, startangle = 90)
+patches, labels, dummy = zip(*sorted(zip(patches, labels, sizes), key = lambda x: x[2], reverse=True))
+plt.legend(patches, labels, loc = 'best', bbox_to_anchor = (-0.1, 1.), fontsize=15)
+plt.title("Top 5 most submitted job titles", bbox = {'facecolor': '0.8', 'pad':5}, fontsize = 15)
+
+
+# salary boxplots
+salary_worst = list()
+
+for key in worst_5.keys():
+    new_list = list()
+    for index, row in df.iterrows():
+        if (row['SOC_NAME'] == key) & (str(row['PREVAILING_WAGE']) != 'nan'):
+            if (row['PW_UNIT_OF_PAY'] == 'Hour') & (float(row['PREVAILING_WAGE'].replace(',','')) <1000):
+                new_list.append(float(row['PREVAILING_WAGE'].replace(',',''))*2080)
+            else:
+                if isinstance(row['PREVAILING_WAGE'],(float,int)):
+                    new_list.append(row['PREVAILING_WAGE'])
+                else:
+                    new_list.append(float(row['PREVAILING_WAGE'].replace(',','')))
+    salary_worst.append(new_list)
+
+salary_best = list()
+
+for key in Dictx.keys():
+    new_list = list()
+    for index, row in df.iterrows():
+        if (row['SOC_NAME'] == key) & (str(row['PREVAILING_WAGE']) != 'nan'):
+            if (row['PW_UNIT_OF_PAY'] == 'Hour') & (float(row['PREVAILING_WAGE'].replace(',','')) <1000):
+                new_list.append(float(row['PREVAILING_WAGE'].replace(',',''))*2080)
+            else:
+                if isinstance(row['PREVAILING_WAGE'],(float,int)):
+                    new_list.append(row['PREVAILING_WAGE'])
+                else:
+                    new_list.append(float(row['PREVAILING_WAGE'].replace(',','')))
+    salary_best.append(new_list)
+
+
+
+
+
+fig1, ax1 = plt.subplots()
+ax1.boxplot(salary_best, labels = ['GRAPHICS DESIGNER', 'COMPUTER SYSTEMS ADMINISTRATOR', 'SALES ENGINEER', 'COMPUTER PROGRAMMER', 'COMPUTER SYSTEMS ANALYST'])
+ax1.set_title('Salaries for top 5 job titles with highest approval rates', fontsize = 15)
+ax1.set_ylabel('Salary', fontsize = 15)
+plt.xticks(rotation = 70)
+
+fig1, ax1 = plt.subplots()
+ax1.boxplot(salary_worst, labels = ['APPLICATION PROGRAMMER', 'COMPUTER SYSTEM ANALYST', 'COOKS', 'FITNESS TRAINERS', 'SECRETARIES'])
+ax1.set_title('Salaries for top 5 job titles with lowest approval rates', fontsize = 15)
+ax1.set_ylabel('Salary', fontsize = 15)
+plt.xticks(rotation = 70)
