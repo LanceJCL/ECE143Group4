@@ -17,3 +17,4 @@ readData.py is initial data processing code.
 For the horizotional job distribution bar chart for top 5 company 
 and for Distribution of annual salary bar chart, and best company for top ten job
 you just need to run  plot_code.py
+ECE143.ipynb is just to visualize plot generate in plot_code.py
