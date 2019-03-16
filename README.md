@@ -1,5 +1,15 @@
 # ECE143Group4
-Pls download all file in the repository
+
+Data Extraction: 
+The data was taken from https://www.foreignlaborcert.doleta.gov/h-1b.cfm
+The excel files from 2015 to 2018 were combined in a dataframe and then converted to csv format. Please run read_data.py file to get the csv file saved. 
+
+The following files were used in the project:
+plot_code.py: horizotional job distribution bar chart for top 5 company
+and for Distribution of annual salary bar chart
+
+
+
 and run the plot_code.py for horizotional job distribution bar chart for top 5 company
 and for Distribution of annual salary bar chart
 dataprocess.py is the module that contain data processing function.
@@ -17,4 +27,3 @@ readData.py is initial data processing code.
 For the horizotional job distribution bar chart for top 5 company 
 and for Distribution of annual salary bar chart, and best company for top ten job
 you just need to run  plot_code.py
-ECE143.ipynb is just to visualize plot generate in plot_code.py
