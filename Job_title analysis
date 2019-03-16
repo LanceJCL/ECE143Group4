@@ -1,213 +1,158 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
-thisset = set()
-
-#getting all job titles in a set
-for i in df['SOC_NAME']:
-  thisset.add(i)
-  
-#creating a mapping of the total number of applicants for each job title
-total_applications = {i:(df['SOC_NAME'].str.contains(i)).sum() for i in thisset}
-
-#creating a mapping of the total certified applicants for each job title
-approved_applicants = {i:(df['SOC_NAME'].str.contains(i) & df['CASE_STATUS'].str.contains('CERTIFIED') & ~df['CASE_STATUS'].str.contains('WITHDRAWN')).sum() for i in thisset}
-
-#creating mapping of percentage_approved for each job title
-percentage_approved = {i: approved_applicants[i]/total_applications[i] for i in thisset}
-percentage_approved = {i:percentage_approved[i]*100 for i in thisset}
-
-#filtering out the top 15 highest percentage_approved job titles and their respective percentages 
-Dictx = dict(sorted(percentage_approved.items(), key = lambda x:-x[1])[:15])
-
-#creating pie chart
-sizes = [Dictx[i] for i in Dictx.keys()]
-labels = tuple([i for i in Dictx.keys()])
-fig1, ax1 = plt.subplots()
-ax1.pie(sizes, labels = labels, autopct = '%1.1f%%',shadow = True, startangle=90)
-ax1.axis('equal')
-plt.show()
-
-#filtering out the top 10 highest submitted H1B job titles and making a pie chart from those 10
-
-Dictx = dict(sorted(total_applications.items(), key = lambda x: -x[1])[:10])
-sizes = [Dictx[i] for i in Dictx.keys()]
-percent = [100*i/sum(sizes) for i in sizes]
-labels = ['{0} - {1} cases submitted'.format(i,j) for i, j in zip(Dictx.keys(), Dictx.values())]
-patches, texts = plt.pie(sizes, startangle = 90)
-patches, labels, dummy = zip(*sorted(zip(patches, labels, sizes), key = lambda x: x[2], reverse=True))
-plt.legend(patches, labels, loc = 'best', bbox_to_anchor = (-0.1, 1.), fontsize=8)
-plt.title("Top 10 most submitted job titles", bbox = {'facecolor': '0.8', 'pad':5})
-
-#filtering out the approval rates for top 10 highest submitted
-percentage_top10 = {i:percentage_approvied[i] for i in Dictx.keys()}
-
-#horizontal bar chart for approval rates of top 10 highest submitted
-def plot_bar_y():
-    index = np.arange(len(labels))
-    plt.barh(index,list(percentage_top10.values()))
-    plt.xlabel('Approval Rates', fontsize=11)
-    plt.ylabel('Job Titles', fontsize=11)
-    plt.yticks(index, percentage_top10.keys(), fontsize = 7)
-    plt.title('Approval Rates of Top 10 Most Submitted Jobs', fontsize = 11)
-    plt.show()
-
-#line graph for top 10 jobs from 2011 until 2017
-
-#getting dictionary of the values of total submissions between 2011 to 2017 
-x = dict()
-for i in percentage_top10.keys():
-    y = list()
-    for year in range(2011,2018):
-        y.append(((df['SOC_NAME'].str.contains(i)) & (df['CASE_SUBMITTED_YEAR'] == year)).sum())
-    x[i] = y
-#plotting them on line chart
-
-color = ['orange', 'g', 'b', 'r', 'c', 'm', 'y', 'k', 'darksalmon', 'sienna']
-my_dict = dict(zip(percentage_top10.keys(), color))
-for job in my_dict.keys():
-    plt.plot(list(range(2011,2018)), x[job], color = my_dict[job], label = job)
-plt.xlabel('Year')
-plt.ylabel('submitted cases')
-plt.legend(loc = 'upper left')
-plt.title('submitted cases of the top 10 jobs from 2011 until 2017')
-plt.show()
-
-
-#creating bar chart
-def plot_bar_x():
-    index = np.arange(len(labels))
-    plt.bar(index, sizes)
-    plt.xlabel('Top 15 Job Titles', fontsize=5)
-    plt.ylabel('Percentage certified for H1b', fontsize=5)
-    plt.xticks(index, labels, fontsize=5, rotation = 30)
-    plt.title('Top 15 job titles and their acceptance rates for H1b')
-    plt.show()
-    
-#getting the data
-   
+#getting data and fetching most needed info
 df = pd.read_csv("totalnew.csv", encoding='latin-1', low_memory=False, usecols=['CASE_SUBMITTED','DECISION_DATE', 'EMPLOYER_NAME', 'EMPLOYER_STATE', 'PREVAILING_WAGE', 'PW_UNIT_OF_PAY', 'CASE_STATUS', 'SOC_NAME', 'SOC_CODE'])
 dfn = df.reset_index()
 df = dfn.drop(['index'], axis=1)
 df['year'] = pd.DatetimeIndex(df['CASE_SUBMITTED']).year
 df = df[df.year.isin(range(2015,2019))]
+
+
+
+
+#creates a pie of the top 5 least submitted job titles
+def pie_chart_low5(df):
+    '''
+    creates a pie chart of the top 5 least submitted job titles
+    '''
+    isinstance(df, pd.DataFrame)
     
-thisset = set()
-for i in df['SOC_NAME']:
-  thisset.add(i) 
-    
-total_applications = {i:(df['SOC_NAME']==(i)).sum() for i in thisset}
+    thisset = set()
 
-
-approved_applicants = {i:((df['SOC_NAME'] == i) & (df['CASE_STATUS'] =='CERTIFIED')).sum() for i in thisset}
-
-percentage_approved = {i: 100*approved_applicants[i]/total_applications[i] for i in thisset}
-    
- #filters out the submissions that have over 50 counts
-new_total = dict()
-for key,value in total_applications.items():
- if value >=50:
- new_total[key] = value
+    #getting all job titles in a set
+    for i in df['SOC_NAME']:
+      thisset.add(i)
     
     
-  #stacked barcharts for top 5 highest approved and top5 worst approved
+    #creating a mapping of the total number of applicants for each job title
+    total_applications = {i:(df['SOC_NAME'].str.contains(i)).sum() for i in thisset}
+    
+    
+    least_submitted_top5 = dict(sorted(total_applications.items(), key = lambda x: x[1])[:5])
+    sizes = [least_submitted_top5[i] for i in least_submitted_top5.keys()]
+    labels = ['{0} - {1} case(s) submitted'.format(i,j) for i, j in zip(least_submitted_top5.keys(), least_submitted_top5.values())]
+    patches, texts = plt.pie(sizes, startangle = 90)
+    patches, labels, dummy = zip(*sorted(zip(patches, labels, sizes), key = lambda x: x[2], reverse=True))
+    plt.legend(patches, labels, loc = 'best', bbox_to_anchor = (-0.1, 1.), fontsize=15)
+    plt.title("Top 5 least submitted job titles", bbox = {'facecolor': '0.8', 'pad':5}, fontsize = 15)
 
-Dictx = dict(sorted(new_percentage.items(), key = lambda x:-x[1])[:5])
-approved = {i: new_approved[i] for i in Dictx.keys()}
-approved = (i for i in approved.values())
-N = 5
-ind = np.arange(N)
-width = 0.35
- worst_5 = dict(sorted(new_percentage.items(), key = lambda x:x[1])[:5])
-worst_5_approved = tuple(new_approved[i] for i in worst_5.keys())
-worst_5_denied = tuple(new_total[i] - new_approved[i] for i in worst_5.keys())
+#creates a pie of the top 5 most submitted job titles
 
+def pie_chart_top5(df):
+    '''
+    creates a pie chart of the top 5 most submitted job titles
+    '''
+    isinstance(df, pd.DataFrame)
+    
+    thisset = set()
 
-p1 = plt.bar(ind, worst_5_approved, width)
-p2 = plt.bar(ind, worst_5_denied, width, bottom = worst_5_approved)
-plt.ylabel('number of cases', fontsize = 15)
-plt.title('H1B cases of worst 5 job titles', fontsize = 15)
-plt.xticks(ind, label_worst, rotation = 50)
-plt.legend((p1[0], p2[0]), ('Approved', 'Denied'))
-plt.show()
-
- p1 = plt.bar(ind, approved, width)
-p2 = plt.bar(ind, denied, width, bottom = approved)
-plt.ylabel('number of cases', fontsize = 15)
-plt.title('H1B cases of top 5 job titles', fontsize = 15)
-plt.xticks(ind, label, rotation = 50)
-plt.legend((p1[0], p2[0]), ('Approved', 'Denied'))
-plt.show()
-
-#piecharts for top 5 most submissions and least submissions
-least_submitted_top5 = dict(sorted(new_total.items(), key = lambda x: x[1])[:5])
-
-sizes = [least_submitted_top5[i] for i in least_submitted_top5.keys()]
-
-percent = [100*i/sum(sizes) for i in sizes]
-labels = ['{0} - {1} case(s) submitted'.format(i,j) for i, j in zip(least_submitted_top5.keys(), least_submitted_top5.values())]
-patches, texts = plt.pie(sizes, startangle = 90)
-patches, labels, dummy = zip(*sorted(zip(patches, labels, sizes), key = lambda x: x[2], reverse=True))
-plt.legend(patches, labels, loc = 'best', bbox_to_anchor = (-0.1, 1.), fontsize=15)
-plt.title("Top 5 least submitted job titles", bbox = {'facecolor': '0.8', 'pad':5}, fontsize = 15)
+    #getting all job titles in a set
+    for i in df['SOC_NAME']:
+      thisset.add(i)
+    
+    
+    #creating a mapping of the total number of applicants for each job title
+    total_applications = {i:(df['SOC_NAME']==i).sum() for i in thisset}
+    
+    most_submitted_top5 = dict(sorted(total_applications.items(), key = lambda x: -x[1])[:5])
+    sizes = [most_submitted_top5[i] for i in most_submitted_top5.keys()]
+    labels = ['{0} - {1} case(s) submitted'.format(i,j) for i, j in zip(most_submitted_top5.keys(), most_submitted_top5.values())]
+    patches, texts = plt.pie(sizes, startangle = 90)
+    patches, labels, dummy = zip(*sorted(zip(patches, labels, sizes), key = lambda x: x[2], reverse=True))
+    plt.legend(patches, labels, loc = 'best', bbox_to_anchor = (-0.1, 1.), fontsize=15)
+    plt.title("Top 5 most submitted job titles", bbox = {'facecolor': '0.8', 'pad':5}, fontsize = 15)
 
 
-most_submitted_top5 = dict(sorted(new_total.items(), key = lambda x: -x[1])[:5])
+# creates stacked bar chart of top 5 job titles and their approval rates
 
+ def stacked_bar_top5(df):
+    '''
+    Creates a stacked_bar chart(showing denied and approved) for the top 5 job titles with highest approval rates
+    '''
+    isinstance(df, pd.DataFrame)
+    
+    
+    #getting all job titles in a set
+      for i in df['SOC_NAME']:
+        thisset.add(i)
+    
+    
+    
+    #creating a mapping of the total number of applicants for each job title
+    total_applications = {i:(df['SOC_NAME']==i).sum() for i in thisset}
 
-sizes = [most_submitted_top5[i] for i in most_submitted_top5.keys()]
-percent = [100*i/sum(sizes) for i in sizes]
-labels = ['{0} - {1} case(s) submitted'.format(i,j) for i, j in zip(most_submitted_top5.keys(), most_submitted_top5.values())]
-patches, texts = plt.pie(sizes, startangle = 90)
-patches, labels, dummy = zip(*sorted(zip(patches, labels, sizes), key = lambda x: x[2], reverse=True))
-plt.legend(patches, labels, loc = 'best', bbox_to_anchor = (-0.1, 1.), fontsize=15)
-plt.title("Top 5 most submitted job titles", bbox = {'facecolor': '0.8', 'pad':5}, fontsize = 15)
-
-
-# salary boxplots
-salary_worst = list()
-
-for key in worst_5.keys():
-    new_list = list()
-    for index, row in df.iterrows():
-        if (row['SOC_NAME'] == key) & (str(row['PREVAILING_WAGE']) != 'nan'):
-            if (row['PW_UNIT_OF_PAY'] == 'Hour') & (float(row['PREVAILING_WAGE'].replace(',','')) <1000):
-                new_list.append(float(row['PREVAILING_WAGE'].replace(',',''))*2080)
-            else:
-                if isinstance(row['PREVAILING_WAGE'],(float,int)):
-                    new_list.append(row['PREVAILING_WAGE'])
-                else:
-                    new_list.append(float(row['PREVAILING_WAGE'].replace(',','')))
-    salary_worst.append(new_list)
-
-salary_best = list()
-
-for key in Dictx.keys():
-    new_list = list()
-    for index, row in df.iterrows():
-        if (row['SOC_NAME'] == key) & (str(row['PREVAILING_WAGE']) != 'nan'):
-            if (row['PW_UNIT_OF_PAY'] == 'Hour') & (float(row['PREVAILING_WAGE'].replace(',','')) <1000):
-                new_list.append(float(row['PREVAILING_WAGE'].replace(',',''))*2080)
-            else:
-                if isinstance(row['PREVAILING_WAGE'],(float,int)):
-                    new_list.append(row['PREVAILING_WAGE'])
-                else:
-                    new_list.append(float(row['PREVAILING_WAGE'].replace(',','')))
-    salary_best.append(new_list)
+    #creating a mapping of the total certified applicants for each job title
+    approved_applicants = {i:((df['SOC_NAME']==i) & (df['CASE_STATUS']=='CERTIFIED')).sum() for i in thisset}
+    
+    #filtering out the job titles with submissions that are too low (<50)
+    new_total = dict()
+    for key, value in total_applications.items():
+    if value>=50:
+        new_total[key] = value
+    
+    new_percentage = {i: 100*approved_applicants[i]/total_applications[i] for i in new_total.keys()}
+    new_approved = {i:approved_applicants[i] for i in new_total.keys()}
+    N = 5
+    ind = np.arange(N)
+    width = 0.35
+    top_5 = dict(sorted(new_percentage.items(), key = lambda x:-x[1])[:5])
+    top_5_approved = tuple(new_approved[i] for i in top_5.keys())
+    top_5_denied = tuple(new_total[i] - new_approved[i] for i in top_5.keys())
+    p1 = plt.bar(ind, top_5_approved, width)
+    p2 = plt.bar(ind, top_5_denied, width, bottom = top_5_approved)
+    plt.ylabel('number of cases', fontsize = 15)
+    plt.title('H1B cases of top 5 job titles', fontsize = 15)
+    plt.xticks(ind, ('GRAPHIC DESIGNER', 'COMPUTER SYSTEMS ADMINISTRATOR', 'SALES ENGINEER', 'COMPUTER PROGRAMMER', 'COMPUTER SYSTEMS ANALYST'), rotation = 50)
+    plt.legend((p1[0], p2[0]), ('Approved', 'Denied'))
+    plt.show()
 
 
 
+# creates stacked bar chart of top 5 job titles with lowest approval rates
+def stacked_bar_worst5(df):
+    '''
+    Creates a stacked_bar chart(showing denied and approved) for the top 5 job titles with lowest approval rates
+    '''
+    
+    isinstance(df, pd.DataFrame)
+    
+    
+    #getting all job titles in a set
+      for i in df['SOC_NAME']:
+        thisset.add(i)
+    
+    
+    
+    #creating a mapping of the total number of applicants for each job title
+    total_applications = {i:(df['SOC_NAME']==i).sum() for i in thisset}
+
+    #creating a mapping of the total certified applicants for each job title
+    approved_applicants = {i:((df['SOC_NAME']==i) & (df['CASE_STATUS']=='CERTIFIED')).sum() for i in thisset}
+    
+    #filtering out the job titles with submissions that are too low (<50)
+    new_total = dict()
+    for key, value in total_applications.items():
+    if value>=50:
+        new_total[key] = value
+    
+    new_percentage = {i: 100*approved_applicants[i]/total_applications[i] for i in new_total.keys()}
+    new_approved = {i:approved_applicants[i] for i in new_total.keys()}
+    N = 5
+    ind = np.arange(N)
+    width = 0.35
+    worst_5 = dict(sorted(new_percentage.items(), key = lambda x:x[1])[:5])
+    worst_5_approved = tuple(new_approved[i] for i in worst_5.keys())
+    worst_5_denied = tuple(new_total[i] - new_approved[i] for i in worst_5.keys())
+    p1 = plt.bar(ind, worst_5_approved, width)
+    p2 = plt.bar(ind, worst_5_denied, width, bottom = worst_5_approved)
+    plt.ylabel('number of cases', fontsize = 15)
+    plt.title('H1B cases of 5 lowest approved job titles', fontsize = 15)
+    plt.xticks(ind, worst_5.keys(), rotation = 50)
+    plt.legend((p1[0], p2[0]), ('Approved', 'Denied'))
+    plt.show()
 
 
-fig1, ax1 = plt.subplots()
-ax1.boxplot(salary_best, labels = ['GRAPHICS DESIGNER', 'COMPUTER SYSTEMS ADMINISTRATOR', 'SALES ENGINEER', 'COMPUTER PROGRAMMER', 'COMPUTER SYSTEMS ANALYST'])
-ax1.set_title('Salaries for top 5 job titles with highest approval rates', fontsize = 15)
-ax1.set_ylabel('Salary', fontsize = 15)
-plt.xticks(rotation = 70)
 
-fig1, ax1 = plt.subplots()
-ax1.boxplot(salary_worst, labels = ['APPLICATION PROGRAMMER', 'COMPUTER SYSTEM ANALYST', 'COOKS', 'FITNESS TRAINERS', 'SECRETARIES'])
-ax1.set_title('Salaries for top 5 job titles with lowest approval rates', fontsize = 15)
-ax1.set_ylabel('Salary', fontsize = 15)
-plt.xticks(rotation = 70)
