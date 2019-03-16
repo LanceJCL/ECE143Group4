@@ -3,7 +3,7 @@ Pls download all file in the repository
 and run the plot_code.py for horizotional job distribution bar chart for top 5 company
 and for Distribution of annual salary bar chart
 dataprocess.py is the module that contain data processing function.
-to get the main dataset we used  use following googledrive link:\n
+to get the main dataset we used  use following googledrive link:/n
 https://drive.google.com/file/d/1MFjtvaZ-nbRznS_LyCeFfBihSFTOiFrF/view?usp=sharing
 \n
 Put this csv file into same folder as the remaining python code.
