@@ -14,10 +14,10 @@ accecpted,denied,jobs_name_list,top_com_list = data_best_company_for_top10jobs(j
 
 
 ################Jobs distribution plot for top 5 company#######################
-#plotly.tools.set_credentials_file(username='Lanceljc', api_key='9om7ohKNz7yvpYZ7ehlJ')
-#cf.set_config_file(offline=False, world_readable=True, theme='ggplot')
-#df = pd.DataFrame(new_input_new, columns=new_list_name)
-#df.iplot(kind='barh',barmode='stack', bargap=.1)
+plotly.tools.set_credentials_file(username='Lanceljc', api_key='9om7ohKNz7yvpYZ7ehlJ')
+cf.set_config_file(offline=False, world_readable=True, theme='ggplot')
+df = pd.DataFrame(new_input_new, columns=new_list_name)
+df.iplot(kind='barh',barmode='stack', bargap=.1)
 
 #################plot for distribution of Salary###############################
 import matplotlib.mlab as mlab
@@ -72,5 +72,5 @@ layout = go.Layout(
 fig = go.Figure(data=data, layout=layout)
 
 # IPython notebook
-py.iplot(fig, filename='pandas-bar-chart-layout')
+py.plot(fig)#, filename='pandas-bar-chart-layout')
 
