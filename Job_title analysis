@@ -16,6 +16,8 @@ df = df[df.year.isin(range(2015,2019))]
 #creates a pie of the top 5 least submitted job titles
 def pie_chart_low5(df):
     '''
+    type: dataframe 
+    param: data to be analyzed
     creates a pie chart of the top 5 least submitted job titles
     '''
     isinstance(df, pd.DataFrame)
@@ -43,6 +45,8 @@ def pie_chart_low5(df):
 
 def pie_chart_top5(df):
     '''
+    type: dataframe
+    param: data to be analzed
     creates a pie chart of the top 5 most submitted job titles
     '''
     isinstance(df, pd.DataFrame)
@@ -70,6 +74,8 @@ def pie_chart_top5(df):
 
  def stacked_bar_top5(df):
     '''
+    type: dataframe
+    param: data to be analyzed
     Creates a stacked_bar chart(showing denied and approved) for the top 5 job titles with highest approval rates
     '''
     isinstance(df, pd.DataFrame)
@@ -114,6 +120,8 @@ def pie_chart_top5(df):
 # creates stacked bar chart of top 5 job titles with lowest approval rates
 def stacked_bar_worst5(df):
     '''
+    type: dataframe
+    param: data to be analyzed
     Creates a stacked_bar chart(showing denied and approved) for the top 5 job titles with lowest approval rates
     '''
     
